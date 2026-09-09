@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNS - Ingeniería en Sistemas de Información</title>
+    <!-- Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Vis Network for graph visualization -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main graph container -->
+    <div id="graph-container"></div>
+    <!-- UI Overlay for controls and info -->
+    <div class="panel glass-panel">
+        <header>
+            <h1>Plan de Estudios</h1>
+            <p class="subtitle">Ingeniería en Sistemas de Información - UNS</p>
+        </header>
+        <div class="controls">
+            <div class="toggle-container">
+                <span class="toggle-label">Ver correlativas para:</span>
+                <div class="radio-group">
+                    <input type="radio" id="mode-cursar" name="mode" value="cursar" checked>
+                    <label for="mode-cursar">Cursar</label>
+                    <input type="radio" id="mode-rendir" name="mode" value="rendir">
+                    <label for="mode-rendir">Rendir</label>
+                </div>
+            </div>
+        </div>
+        <div id="info-box" class="info-box hidden">
+            <div class="badge" id="info-code"></div>
+            <h2 id="info-title">Materia</h2>
+            <p class="info-year">Año: <span id="info-year-val"></span> - Cuatrimestre: <span id="info-term-val"></span></p>
+            
+            <div class="req-section">
+                <h3>Correlativas Requeridas:</h3>
+                <ul id="info-reqs" class="req-list">
+                    <!-- Requirements dynamically inserted here -->
+                </ul>
+            </div>
+        </div>
+        <div class="legend">
+            <h3>Año de cursada</h3>
+            <div class="legend-items">
+                <div class="legend-item"><span class="color-dot year-1"></span> 1º Año</div>
+                <div class="legend-item"><span class="color-dot year-2"></span> 2º Año</div>
+                <div class="legend-item"><span class="color-dot year-3"></span> 3º Año</div>
+                <div class="legend-item"><span class="color-dot year-4"></span> 4º Año</div>
+                <div class="legend-item"><span class="color-dot year-5"></span> 5º Año</div>
+            </div>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
