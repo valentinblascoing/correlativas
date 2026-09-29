@@ -1,14 +1,15 @@
 // =============================================
-// CONFIGURATION: Year colors matching style.css
+// CONFIGURATION: Colors based on course availability
 // =============================================
-const YEAR_COLORS = {
-  1: { bg: '#1d4ed8', border: '#3b82f6', highlight: '#60a5fa' },
-  2: { bg: '#065f46', border: '#10b981', highlight: '#34d399' },
-  3: { bg: '#92400e', border: '#f59e0b', highlight: '#fbbf24' },
-  4: { bg: '#9d174d', border: '#ec4899', highlight: '#f472b6' },
-  5: { bg: '#5b21b6', border: '#8b5cf6', highlight: '#a78bfa' },
+const SUBJECT_AVAILABILITY = {
+  both: new Set(['03051', '03058', '05551', '05552', '05744', '05793', '05912', '07655', '07713', '07791', '07820', '07949', '07951']),
+  one: new Set(['02115', '05523', '05561', '05704', '05949', '06601', '07527', '07534', '07552', '07668', '07714', '07821', '07891', '07903', '07911', '07922', '07993']),
 };
-const SPECIAL_COLOR = { bg: '#1e3a5f', border: '#38bdf8', highlight: '#7dd3fc' };
+const AVAILABILITY_COLORS = {
+  both: { bg: '#166534', border: '#4ade80', highlight: '#15803d' },
+  one: { bg: '#854d0e', border: '#facc15', highlight: '#a16207' },
+  unknown: { bg: '#334155', border: '#64748b', highlight: '#475569' },
+};
 let currentMode = 'cursar';
 let network = null;
 let nodesDataset = null;
@@ -65,6 +66,7 @@ function init() {
     },
   };
   network = new vis.Network(container, { nodes: nodesDataset, edges: edgesDataset }, options);
+  network.on('beforeDrawing', drawYearMarkers);
   // Event: click on a node
   network.on('click', (params) => {
     if (params.nodes.length > 0) {
@@ -98,8 +100,7 @@ function init() {
 // =============================================
 function buildGraphData(mode) {
   const nodes = curriculumData.map((subject) => {
-    const isSpecial = subject.id.startsWith('I0');
-    const colors = isSpecial ? SPECIAL_COLOR : YEAR_COLORS[subject.year];
+    const colors = getAvailabilityColors(subject.id);
     const label = wrapText(subject.label, 22);
     return {
       id: subject.id,
@@ -136,6 +137,56 @@ function buildGraphData(mode) {
     });
   });
   return { nodes, edges };
+}
+function getAvailabilityColors(subjectId) {
+  const code = subjectId.startsWith('I') ? subjectId : subjectId.padStart(5, '0');
+  if (SUBJECT_AVAILABILITY.both.has(code)) return AVAILABILITY_COLORS.both;
+  if (SUBJECT_AVAILABILITY.one.has(code)) return AVAILABILITY_COLORS.one;
+  return AVAILABILITY_COLORS.unknown;
+}
+function drawYearMarkers(context) {
+  const positions = network.getPositions();
+  const yearCenters = new Map();
+  let top = Infinity;
+  let bottom = -Infinity;
+  curriculumData.forEach((subject) => {
+    const position = positions[subject.id];
+    if (!position) return;
+    const center = yearCenters.get(subject.year) || { x: 0, top: Infinity, count: 0 };
+    center.x += position.x;
+    center.top = Math.min(center.top, position.y);
+    center.count += 1;
+    yearCenters.set(subject.year, center);
+    top = Math.min(top, position.y);
+    bottom = Math.max(bottom, position.y);
+  });
+  const orderedYears = [...yearCenters.entries()]
+    .map(([year, center]) => ({ year, x: center.x / center.count }))
+    .sort((a, b) => a.x - b.x);
+  context.save();
+  context.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+  context.lineWidth = 2;
+  orderedYears.slice(0, -1).forEach((year, index) => {
+    const nextYear = orderedYears[index + 1];
+    const x = (year.x + nextYear.x) / 2;
+    context.beginPath();
+    context.moveTo(x, top - 120);
+    context.lineTo(x, bottom + 120);
+    context.stroke();
+  });
+  context.fillStyle = 'rgba(255, 255, 255, 0.12)';
+  context.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+  context.lineWidth = 3;
+  context.font = '700 300px Inter, sans-serif';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  yearCenters.forEach((center, year) => {
+    const x = center.x / center.count;
+    const y = center.top - 200;
+    context.strokeText(String(year), x, y);
+    context.fillText(String(year), x, y);
+  });
+  context.restore();
 }
 // =============================================
 // REBUILD EDGES WHEN MODE CHANGES
@@ -189,9 +240,7 @@ function highlightConnected(selectedId) {
   const connectedNodes = network.getConnectedNodes(selectedId);
   const connectedSet = new Set([selectedId, ...connectedNodes]);
   const updates = allNodeIds.map((id) => {
-    const subject = curriculumData.find((s) => s.id === id);
-    const isSpecial = id.startsWith('I0');
-    const colors = isSpecial ? SPECIAL_COLOR : YEAR_COLORS[subject ? subject.year : 1];
+    const colors = getAvailabilityColors(id);
     if (connectedSet.has(id)) {
       return {
         id,
@@ -221,9 +270,7 @@ function highlightConnected(selectedId) {
 // =============================================
 function resetHighlight() {
   const updates = nodesDataset.getIds().map((id) => {
-    const subject = curriculumData.find((s) => s.id === id);
-    const isSpecial = id.startsWith('I0');
-    const colors = isSpecial ? SPECIAL_COLOR : YEAR_COLORS[subject ? subject.year : 1];
+    const colors = getAvailabilityColors(id);
     return {
       id,
       color: {

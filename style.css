@@ -186,12 +186,9 @@ header h1 {
     border-radius: 50%;
     display: inline-block;
 }
-/* Year Colors */
-.year-1 { background-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.6); } /* Blue */
-.year-2 { background-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.6); } /* Emerald */
-.year-3 { background-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.6); } /* Amber */
-.year-4 { background-color: #ec4899; box-shadow: 0 0 10px rgba(236, 72, 153, 0.6); } /* Pink */
-.year-5 { background-color: #8b5cf6; box-shadow: 0 0 10px rgba(139, 92, 246, 0.6); } /* Violet */
+.availability-both { background-color: #4ade80; }
+.availability-one { background-color: #facc15; }
+.availability-unknown { background-color: #64748b; }
 /* Custom scrollbar for panel */
 .panel::-webkit-scrollbar {
     width: 6px;
@@ -202,4 +199,9 @@ header h1 {
 .panel::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 10px;
+}
+@media (max-width: 768px) {
+    .panel.glass-panel {
+        display: none;
+    }
 }
