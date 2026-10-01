@@ -206,6 +206,26 @@ function showNodeInfo(nodeId) {
   document.getElementById('info-title').textContent = subject.label;
   document.getElementById('info-year-val').textContent = subject.year;
   document.getElementById('info-term-val').textContent = subject.term;
+  const offering = offeringData[subject.id];
+  document.getElementById('info-offering-period').textContent = offering && offering.period
+    ? `Último período registrado: ${formatOfferingPeriod(offering.period)}`
+    : 'Sin datos de oferta en los períodos consultados';
+  document.getElementById('info-enrolled').textContent = offering && offering.enrolled !== null
+    ? offering.enrolled.toLocaleString('es-AR')
+    : 'Sin datos';
+  const professorList = document.getElementById('info-professors');
+  professorList.replaceChildren();
+  if (offering && offering.professors.length > 0) {
+    offering.professors.forEach((professor) => {
+      const li = document.createElement('li');
+      li.textContent = professor;
+      professorList.appendChild(li);
+    });
+  } else {
+    const li = document.createElement('li');
+    li.textContent = 'Sin datos';
+    professorList.appendChild(li);
+  }
   const reqList = document.getElementById('info-reqs');
   reqList.innerHTML = '';
   const relevantDeps = subject.deps.filter((dep) => {
@@ -231,6 +251,10 @@ function showNodeInfo(nodeId) {
     });
   }
   document.getElementById('info-box').classList.remove('hidden');
+}
+function formatOfferingPeriod(period) {
+  const [term, year] = period.split('_');
+  return `${term === '1C' ? '1.er' : '2.º'} cuatrimestre ${year}`;
 }
 // =============================================
 // HIGHLIGHT CONNECTED NODES
